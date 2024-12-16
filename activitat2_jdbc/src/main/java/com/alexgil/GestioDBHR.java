@@ -24,6 +24,11 @@ public class GestioDBHR {
         loadDatabaseConfig();
     }
 
+    // Método para obtener la conexión a la base de datos
+    public Connection connect() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
     // Método privado para cargar la configuración desde el archivo .prop
     private static void loadDatabaseConfig() {
         Properties properties = new Properties();

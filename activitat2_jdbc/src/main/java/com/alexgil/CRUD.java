@@ -10,9 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class CRUDHR {
+public class CRUD {
 
-    // Añade un libro
+    // Añade un libro a la bd
     public void InsertLlibre(Connection connection, Llibre llibre) throws SQLException {
 
         String query = "INSERT INTO Llibres (isbn, titol, autor, any_publicacio, disponibilitat, id_categoria, num_estanteria) "
@@ -23,6 +23,7 @@ public class CRUDHR {
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
             int idx = 1;
+            // No establecemos el idLlibre porque es autoincremental
             prepstat.setInt(idx++, llibre.getIsbn());
             prepstat.setString(idx++, llibre.getTitol());
             prepstat.setString(idx++, llibre.getAutor());
@@ -33,6 +34,15 @@ public class CRUDHR {
 
             // Ejecutar la operación
             prepstat.executeUpdate();
+
+            // Obtener el idLlibre generado automáticamente
+            try (ResultSet generatedKeys = prepstat.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int generatedIdLlibre = generatedKeys.getInt(1);
+                    // Ahora tenemos el idLlibre autoincrementado
+                    llibre.setIdLlibre(generatedIdLlibre);
+                }
+            }
 
             // Hacer commit si la operación fue exitosa
             connection.commit();
@@ -53,7 +63,7 @@ public class CRUDHR {
         }
     }
 
-    // Lee todos los registros de libros que encuentre
+    // Lee todos los libros de la bd
     public void ReadAllLlibres(Connection connection) throws SQLException {
         String query = "SELECT * FROM Llibres";
 
@@ -72,27 +82,37 @@ public class CRUDHR {
         }
     }
 
-    // Lee el libro segun el isbn indicado
-    public void ReadLlibreByIsbn(Connection connection, int isbn) throws SQLException {
+    public Llibre ReadLlibreByIsbn(Connection connection, int isbn) throws SQLException {
         String query = "SELECT * FROM Llibres WHERE isbn = ?";
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
             prepstat.setInt(1, isbn);
             ResultSet rset = prepstat.executeQuery();
 
-            // Obtener el número de columnas y mostrar los registros
-            int colNum = Utils.getColumnNames(rset);
+            if (rset.next()) {
+                // Si se encuentra el libro, obtenemos los valores de la base de datos
+                int idLlibre = rset.getInt("idLlibre"); // autoincrement
+                int isbnResult = rset.getInt("isbn");
+                String titol = rset.getString("titol");
+                String autor = rset.getString("autor");
+                int anyPublicacio = rset.getInt("any_publicacio");
+                boolean disponibilitat = rset.getBoolean("disponibilitat");
+                int idCategoria = rset.getInt("id_categoria");
+                int numEstanteria = rset.getInt("num_estanteria");
 
-            // Si hay columnas, leer y mostrar los registros
-            if (colNum > 0) {
-                Utils.recorrerRegistres(rset, colNum);
+                // Devolver el objeto Llibre con los datos obtenidos
+                return new Llibre(idLlibre, isbnResult, titol, autor, anyPublicacio, disponibilitat, idCategoria,
+                        numEstanteria);
             }
+
         } catch (SQLException sqle) {
-            System.err.println(sqle.getMessage());
+            System.err.println("Error al leer el libro: " + sqle.getMessage());
         }
+
+        // Si no se encuentra el libro, devolver null
+        return null;
     }
 
-    // Actualiza los datos de un libro
     public void UpdateLlibre(Connection connection, Llibre llibre) throws SQLException {
         String query = "UPDATE Llibres SET titol = ?, autor = ?, any_publicacio = ?, disponibilitat = ?, id_categoria = ?, num_estanteria = ? "
                 + "WHERE isbn = ?";
@@ -101,20 +121,28 @@ public class CRUDHR {
         connection.setAutoCommit(false);
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
-            prepstat.setString(1, llibre.getTitol());
-            prepstat.setString(2, llibre.getAutor());
-            prepstat.setInt(3, llibre.getAnyPublicacio());
-            prepstat.setBoolean(4, llibre.isDisponibilitat());
-            prepstat.setInt(5, llibre.getIdCategoria());
-            prepstat.setInt(6, llibre.getNumEstanteria());
-            prepstat.setInt(7, llibre.getIsbn());
+            // Establecer los valores de los campos que se pueden modificar
+            prepstat.setString(1, llibre.getTitol()); // Título
+            prepstat.setString(2, llibre.getAutor()); // Autor
+            prepstat.setInt(3, llibre.getAnyPublicacio()); // Año de publicación
+            prepstat.setBoolean(4, llibre.isDisponibilitat()); // Disponibilidad
+            prepstat.setInt(5, llibre.getIdCategoria()); // ID de categoría
+            prepstat.setInt(6, llibre.getNumEstanteria()); // Número de estantería
+
+            // El ISBN no debe cambiar, pero es el identificador para realizar el UPDATE
+            prepstat.setInt(7, llibre.getIsbn()); // ISBN como clave primaria
 
             // Ejecutar la actualización
-            prepstat.executeUpdate();
+            int rowsAffected = prepstat.executeUpdate();
 
-            // Hacer commit si la operación fue exitosa
-            connection.commit();
-            System.out.println("Libro actualizado con éxito.");
+            // Si se ha actualizado al menos un registro
+            if (rowsAffected > 0) {
+                // Hacer commit si la operación fue exitosa
+                connection.commit();
+                System.out.println("Libro actualizado con éxito.");
+            } else {
+                System.out.println("No se encontró el libro con el ISBN: " + llibre.getIsbn());
+            }
 
         } catch (SQLException sqle) {
             // Si hay un error, hacer rollback

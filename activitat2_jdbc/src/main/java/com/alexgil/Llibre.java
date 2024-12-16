@@ -90,7 +90,6 @@ public class Llibre {
         this.numEstanteria = numEstanteria;
     }
 
-    // toString para depuración y visualización
     @Override
     public String toString() {
         return "Llibre{" +
