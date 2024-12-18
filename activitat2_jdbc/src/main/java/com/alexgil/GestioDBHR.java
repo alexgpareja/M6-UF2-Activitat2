@@ -220,19 +220,34 @@ public class GestioDBHR {
 
             switch (opcio) {
                 case 1:
-                    // Consulta de tots els llibres
-                    crud.ReadAllLlibres(connection);
+                    // Mostrar llibres amb o sense paginació
+                    Utils.showPagedData(br, crud, connection, "Llibres", params -> {
+                        try {
+                            crud.ReadAllLlibres(connection, params[0], params[1]);
+                        } catch (SQLException e) {
+                            System.err.println("Error mostrant els llibres: " + e.getMessage());
+                        }
+                    });
                     break;
+
                 case 2:
-                    // Consulta de totes les categories
-                    crud.readAllCategories(connection);
+                    // Mostrar categories amb o sense paginació
+                    Utils.showPagedData(br, crud, connection, "Categories", params -> {
+                        try {
+                            crud.readAllCategories(connection, params[0], params[1]);
+                        } catch (SQLException e) {
+                            System.err.println("Error mostrant les categories: " + e.getMessage());
+                        }
+                    });
                     break;
+
                 case 3:
                     // Sortir del menú
                     DispOptions = false;
                     break;
+
                 default:
-                    System.out.print("Opcio no vàlida");
+                    System.out.println("Opció no vàlida.");
             }
 
             if (DispOptions) {
@@ -263,7 +278,8 @@ public class GestioDBHR {
             System.out.println("Quina consulta vols fer?");
             System.out.println("1. Llibre per ISBN");
             System.out.println("2. Llibre per títol");
-            System.out.println("3. Sortir");
+            System.out.println("3. Categoria per Id");
+            System.out.println("4. Sortir");
 
             System.out.print("Introdueix l'opció tot seguit >> ");
             opcio = Integer.parseInt(br.readLine());
@@ -282,6 +298,12 @@ public class GestioDBHR {
                     crud.readLlibreByTitol(connection, titolACercar);
                     break;
                 case 3:
+                    // Buscar una categoria pel seu id
+                    System.out.println("Introdueix el ID de la categoria >> ");
+                    int categoriaACercar = Integer.parseInt(br.readLine());
+                    crud.readCategoriaById(connection, categoriaACercar);
+                    break;
+                case 4:
                     // Sortir del submenú
                     DispOptions = false;
                     break;

@@ -114,23 +114,38 @@ public class CRUD {
     }
 
     /**
-     * Llegeix tots els registres de la taula `Llibres` i els mostra per consola.
+     * Llegeix tots els llibres de la base de dades amb suport per a paginació.
+     * 
+     * @param connection Connexió a la base de dades.
+     * @param limit      Nombre màxim de registres per mostrar (-1 per mostrar tots
+     *                   els registres).
+     * @param offset     Posició inicial dels registres (s'ignora si limit és -1).
+     * @throws SQLException En cas d'error de connexió o consulta.
      */
-    public void ReadAllLlibres(Connection connection) throws SQLException {
-        String query = "SELECT * FROM Llibres";
+    public void ReadAllLlibres(Connection connection, int limit, int offset) throws SQLException {
+        // Construcció de la consulta SQL
+        String query = (limit == -1)
+                ? "SELECT * FROM Llibres"
+                : "SELECT * FROM Llibres LIMIT ? OFFSET ?";
 
-        try (Statement statement = connection.createStatement()) {
-            ResultSet rset = statement.executeQuery(query);
+        try (PreparedStatement prepstat = connection.prepareStatement(query)) {
+            if (limit != -1) {
+                prepstat.setInt(1, limit);
+                prepstat.setInt(2, offset);
+            }
 
-            // Obtenir el número de columnes i mostrar els registres
-            int colNum = Utils.getColumnNames(rset);
+            try (ResultSet rset = prepstat.executeQuery()) {
+                // Obtenim el número de columnes i mostrem els registres
+                int colNum = Utils.getColumnNames(rset);
 
-            // Si hi ha columnes, llegir i mostrar els resultats
-            if (colNum > 0) {
-                Utils.recorrerRegistres(rset, colNum);
+                if (colNum > 0) {
+                    Utils.recorrerRegistres(rset, colNum);
+                } else {
+                    System.out.println("No s'han trobat registres.");
+                }
             }
         } catch (SQLException sqle) {
-            System.err.println(sqle.getMessage());
+            System.err.println("Error al llegir els llibres: " + sqle.getMessage());
         }
     }
 
@@ -284,25 +299,43 @@ public class CRUD {
     }
 
     /**
-     * Llegeix tots els registres de la taula `Categoria` i els mostra per consola.
+     * Llegeix els registres de la taula `Categoria` amb opció de paginació i els
+     * mostra per consola.
+     * 
+     * @param connection La connexió a la base de dades.
+     * @param limit      El nombre màxim de registres per pàgina. Passa -1 per
+     *                   desactivar la paginació.
+     * @param offset     El desplaçament inicial (només aplicable si el límit no és
+     *                   -1).
+     * @throws SQLException Si es produeix un error amb la base de dades.
      */
-    public void readAllCategories(Connection connection) throws SQLException {
-        // Consulta SQL per obtenir totes les categories
-        String query = "SELECT * FROM Categoria"; // Assegura't que el nom de la taula sigui correcte
+    public void readAllCategories(Connection connection, int limit, int offset) throws SQLException {
+        // Construïm la consulta SQL amb o sense límits segons els paràmetres
+        String query = (limit > 0)
+                ? "SELECT * FROM Categoria LIMIT ? OFFSET ?"
+                : "SELECT * FROM Categoria";
 
-        try (Statement statement = connection.createStatement();
-                ResultSet rset = statement.executeQuery(query)) {
+        try (PreparedStatement prepstat = connection.prepareStatement(query)) {
+            if (limit > 0) {
+                // Configurem els paràmetres de límit i desplaçament si cal
+                prepstat.setInt(1, limit);
+                prepstat.setInt(2, offset);
+            }
 
-            // Obtenim el número de columnes i mostrem els noms de les columnes
-            int colNum = Utils.getColumnNames(rset);
+            try (ResultSet rset = prepstat.executeQuery()) {
+                // Obtenim el número de columnes i mostrem els noms de les columnes
+                int colNum = Utils.getColumnNames(rset);
 
-            // Si el número de columnes és > 0, procedim a llegir i mostrar els registres
-            if (colNum > 0) {
-                Utils.recorrerRegistres(rset, colNum);
+                // Si el número de columnes és > 0, procedim a llegir i mostrar els registres
+                if (colNum > 0) {
+                    Utils.recorrerRegistres(rset, colNum);
+                } else {
+                    System.out.println("No s'han trobat registres a la taula Categoria.");
+                }
             }
         } catch (SQLException sqle) {
             // Gestionem i mostrem l'error si es produeix alguna excepció SQL
-            System.err.println(sqle.getMessage());
+            System.err.println("Error al llegir les categories: " + sqle.getMessage());
         }
     }
 
