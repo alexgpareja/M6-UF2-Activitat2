@@ -1,5 +1,7 @@
 /*
- * Esta clase se ocupa de las configuraciones, la conexión a la base de datos y la ejecución de los scripts de inicialización (crear tablas y cargar datos)
+ * Aquesta classe s'encarrega de gestionar la connexió a la base de dades,
+ * executar els scripts d'inicialització, i proporcionar un menú per interactuar
+ * amb la base de dades de llibres i categories.
  */
 package com.alexgil;
 
@@ -17,7 +19,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class GestioDBHR {
-    // Com veurem, aquesta booleana controla si volem sortir de l'aplicació.
+    // Aquesta booleana controla si volem sortir de l'aplicació.
     static boolean sortirapp = false;
     static boolean DispOptions = true;
 
@@ -26,29 +28,31 @@ public class GestioDBHR {
         try (BufferedReader br1 = new BufferedReader(new InputStreamReader(System.in))) {
 
             try {
-                // Carregar propietats des de l'arxiu
+                // Carregar propietats des de l'arxiu de configuració
                 Properties properties = new Properties();
+
                 try (InputStream input = GestioDBHR.class.getClassLoader().getResourceAsStream("config.properties")) {
-                    // try (FileInputStream input = new FileInputStream(configFilePath)) {
                     properties.load(input);
 
-                    // Obtenir les credencials com a part del fitxer de propietats
+                    // Obtenir les credencials del fitxer de configuració
                     String dbUrl = properties.getProperty("db.url");
                     String dbUser = properties.getProperty("db.username");
                     String dbPassword = properties.getProperty("db.password");
 
-                    // Conectar amb MariaDB
+                    // Establir connexió amb MariaDB
                     try (Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
                         System.out.println("Conexió exitosa");
 
                         String File_create_script = "db_scripts/DB_Schema_HR.sql";
 
+                        // Carregar i executar l'script de creació de la base de dades
                         InputStream input_sch = GestioDBHR.class.getClassLoader()
                                 .getResourceAsStream(File_create_script);
 
                         CRUD crud = new CRUD();
-                        // Aquí farem la creació de la database i de les taules, a més d'inserir dades
                         crud.CreateDatabase(connection, input_sch);
+
+                        // Mostrar el menú principal fins que es decideixi sortir
                         while (sortirapp == false) {
                             MenuOptions(br1, crud, connection);
                         }
@@ -67,11 +71,15 @@ public class GestioDBHR {
         }
     }
 
+    /**
+     * Mostra el menú principal i gestiona les opcions seleccionades per l'usuari.
+     */
     public static void MenuOptions(BufferedReader br, CRUD crud, Connection connection)
             throws NumberFormatException, IOException, SQLException, InterruptedException {
 
         Terminal terminal = TerminalBuilder.builder().system(true).build();
 
+        // Presentació del menú
         String message = "";
         message = "==================";
         printScreen(terminal, message);
@@ -85,7 +93,8 @@ public class GestioDBHR {
         message = "OPCIONS";
         printScreen(terminal, message);
 
-        message = "1. CARREGAR TAULA";
+        // Opcions disponibles
+        message = "1. CARREGAR LES DADES";
         printScreen(terminal, message);
 
         message = "2. CONSULTAR TOTES LES DADES";
@@ -94,12 +103,22 @@ public class GestioDBHR {
         message = "3. ALTRES CONSULTES";
         printScreen(terminal, message);
 
-        message = "4. INSERIR NOU REGISTRE";
+        message = "4. INSERIR NOU LLIBRE";
+        printScreen(terminal, message);
+
+        message = "5. ACTUALITZAR LLIBRE";
+        printScreen(terminal, message);
+
+        message = "6. ELIMINAR LLIBRE";
+        printScreen(terminal, message);
+
+        message = "7. GENERAR XML";
         printScreen(terminal, message);
 
         message = "9. SORTIR";
         printScreen(terminal, message);
 
+        // Sol·licitar opció
         message = "Introdueix l'opcio tot seguit >> ";
         for (char c : message.toCharArray()) {
             terminal.writer().print(c);
@@ -109,10 +128,12 @@ public class GestioDBHR {
 
         int opcio = Integer.parseInt(br.readLine());
 
+        // Processar l'opció seleccionada
         switch (opcio) {
             case 1:
                 String File_data_script = "db_scripts/DB_Data_HR.sql";
 
+                // Executar l'script d'inserció de dades inicials
                 InputStream input_data = GestioDBHR.class.getClassLoader().getResourceAsStream(File_data_script);
 
                 if (crud.CreateDatabase(connection, input_data) == true) {
@@ -123,23 +144,41 @@ public class GestioDBHR {
 
                 break;
             case 2:
-                // Preguntem de quina taula volem mostrar
+                // Mostrar un menú per seleccionar quina taula consultar
                 MenuSelect(br, crud, connection);
                 break;
 
             case 3:
+                // Consultes addicionals
                 MenuSelectAltres(br, crud, connection);
                 break;
 
             case 4:
+                // Inserir un nou llibre
                 MenuInsert(br, crud, connection);
                 break;
 
+            case 5:
+                // Actualitzar les dades d'un llibre existent
+                MenuUpdateLlibre(br, crud, connection);
+                break;
+
+            case 6:
+                // Eliminar un llibre per ISBN
+                menuEliminarLlibre(br, crud, connection);
+                break;
+
+            case 7:
+                // Generar un XML amb els registres
+                System.out.println("Generació de l'XML encara no implementada.");
+                break;
+
             case 9:
-                // sortim
+                // Sortir de l'aplicació
                 System.out.println("Adéu!!");
                 sortirapp = true;
                 break;
+
             default:
                 System.out.print("Opcio no vàlida");
                 MenuOptions(br, crud, connection);
@@ -147,6 +186,9 @@ public class GestioDBHR {
 
     }
 
+    /**
+     * Imprimeix un missatge caràcter a caràcter amb un efecte de retard.
+     */
     private static void printScreen(Terminal terminal, String message) throws InterruptedException {
         for (char c : message.toCharArray()) {
             terminal.writer().print(c);
@@ -156,15 +198,19 @@ public class GestioDBHR {
         System.out.println();
     }
 
+    /**
+     * Mostra un submenú per consultar els registres d'una taula específica.
+     * L'usuari pot seleccionar entre llibres, categories o sortir del menú.
+     */
     public static void MenuSelect(BufferedReader br, CRUD crud, Connection connection)
             throws SQLException, NumberFormatException, IOException {
 
         int opcio = 0;
 
         while (DispOptions) {
-
+            // Mostrar opcions disponibles
             System.out.println("De quina taula vols mostrar els seus registres?");
-            System.out.println("1. Llibre");
+            System.out.println("1. Llibres");
             System.out.println("2. Categoria");
             System.out.println("3. Sortir");
 
@@ -174,12 +220,15 @@ public class GestioDBHR {
 
             switch (opcio) {
                 case 1:
-                    crud.ReadAllDatabase(connection, "Llibres");
+                    // Consulta de tots els llibres
+                    crud.ReadAllLlibres(connection);
                     break;
                 case 2:
-                    crud.ReadAllDatabase(connection, "Categoria");
+                    // Consulta de totes les categories
+                    crud.readAllCategories(connection);
                     break;
                 case 3:
+                    // Sortir del menú
                     DispOptions = false;
                     break;
                 default:
@@ -187,6 +236,7 @@ public class GestioDBHR {
             }
 
             if (DispOptions) {
+                // Preguntar si es vol fer una altra consulta
                 System.out.println("Vols fer altra consulta? (S o N): ");
                 String opcioB = br.readLine();
 
@@ -199,44 +249,58 @@ public class GestioDBHR {
         }
     }
 
+    /**
+     * Mostra un submenú per realitzar consultes específiques, com buscar un llibre
+     * pel seu ISBN o per un títol parcial o complet.
+     */
     public static void MenuSelectAltres(BufferedReader br, CRUD crud, Connection connection)
-            throws SQLException, NumberFormatException, IOException {
+            throws SQLException, IOException {
 
         int opcio = 0;
 
         while (DispOptions) {
-
+            // Opcions de consulta específica
             System.out.println("Quina consulta vols fer?");
-            System.out.println("1. Departament per id");
-            System.out.println("2. Rang de salaris d'empleats");
+            System.out.println("1. Llibre per ISBN");
+            System.out.println("2. Llibre per títol");
+            System.out.println("3. Sortir");
 
             System.out.print("Introdueix l'opció tot seguit >> ");
-
             opcio = Integer.parseInt(br.readLine());
 
             switch (opcio) {
                 case 1:
-                    System.out.println("Introdueix la id del departament >> ");
-                    int idDept = Integer.parseInt(br.readLine());
-                    crud.ReadDepartamentsId(connection, "DEPARTMENTS", idDept);
+                    // Buscar un llibre pel seu ISBN
+                    System.out.println("Introdueix el ISBN del llibre >> ");
+                    int isbn = Integer.parseInt(br.readLine());
+                    crud.ReadLlibreByIsbn(connection, isbn);
                     break;
                 case 2:
-                    System.out.println("Introdueix el salari mínim dins el rang >> ");
-                    float salMin = Float.parseFloat(br.readLine());
-                    System.out.println("Introdueix el salari màxim dins el rang >> ");
-                    float salMax = Float.parseFloat(br.readLine());
-                    crud.ReadSalaries(connection, "EMPLOYEES", salMin, salMax);
+                    // Buscar llibres amb un títol parcial o complet
+                    System.out.println("Introdueix tot o part del títol del llibre >> ");
+                    String titolACercar = br.readLine();
+                    crud.readLlibreByTitol(connection, titolACercar);
+                    break;
+                case 3:
+                    // Sortir del submenú
+                    DispOptions = false;
+                    break;
+                default:
+                    System.out.println("Opció no vàlida");
             }
-
         }
-
     }
 
+    /**
+     * Permet inserir un nou llibre a la base de dades sol·licitant les dades
+     * necessàries a l'usuari.
+     */
     public static void MenuInsert(BufferedReader br, CRUD crud, Connection connection)
             throws SQLException, NumberFormatException, IOException {
 
         System.out.println("Introdueix les dades del nou llibre");
 
+        // Sol·licitar els camps obligatoris per inserir un llibre
         System.out.print("ISBN: ");
         int isbn = Integer.parseInt(br.readLine());
 
@@ -258,14 +322,105 @@ public class GestioDBHR {
         System.out.print("Número d'estanteria: ");
         int numEstanteria = Integer.parseInt(br.readLine());
 
+        // Crear un objecte Llibre i inserir-lo a la base de dades
         Llibre llibre = new Llibre(0, isbn, titol, autor, anyPublicacio, disponibilitat, idCategoria, numEstanteria);
-
-        crud.InsertLlibre(connection, "Llibre" ,llibre);
+        crud.InsertLlibre(connection, "Llibre", llibre);
 
         System.out.println("Llibre afegit amb èxit!");
     }
 
+    /**
+     * Permet actualitzar un llibre existent basant-se en el seu ISBN.
+     * L'usuari pot modificar només els camps que desitgi.
+     */
+    public static void MenuUpdateLlibre(BufferedReader br, CRUD crud, Connection connection)
+            throws SQLException, IOException {
 
+        System.out.println("Introdueix l'ISBN del llibre que vols actualitzar:");
+        int isbn = Integer.parseInt(br.readLine());
+
+        // Buscar el llibre segons l'ISBN
+        Llibre llibre = crud.ReadLlibreByIsbn(connection, isbn);
+
+        if (llibre == null) {
+            System.out.println("No s'ha trobat cap llibre amb l'ISBN: " + isbn);
+            return;
+        }
+
+        // Mostrar les dades actuals del llibre
+        System.out.println("Llibre trobat: " + llibre);
+
+        // Permetre a l'usuari modificar els camps que desitgi
+        System.out.println("Deixa en blanc per mantenir el valor actual.");
+
+        System.out.print("Nou títol: ");
+        String titol = br.readLine();
+        if (!titol.isEmpty()) {
+            llibre.setTitol(titol);
+        }
+
+        System.out.print("Nou autor: ");
+        String autor = br.readLine();
+        if (!autor.isEmpty()) {
+            llibre.setAutor(autor);
+        }
+
+        System.out.print("Nou any de publicació: ");
+        String anyPublicacioInput = br.readLine();
+        if (!anyPublicacioInput.isEmpty()) {
+            llibre.setAnyPublicacio(Integer.parseInt(anyPublicacioInput));
+        }
+
+        System.out.print("Nova disponibilitat (1 = disponible, 0 = no disponible): ");
+        String disponibilitatInput = br.readLine();
+        if (!disponibilitatInput.isEmpty()) {
+            llibre.setDisponibilitat(Integer.parseInt(disponibilitatInput) == 1);
+        }
+
+        System.out.print("Nou id de categoria: ");
+        String idCategoriaInput = br.readLine();
+        if (!idCategoriaInput.isEmpty()) {
+            llibre.setIdCategoria(Integer.parseInt(idCategoriaInput));
+        }
+
+        System.out.print("Nou número d'estanteria: ");
+        String numEstanteriaInput = br.readLine();
+        if (!numEstanteriaInput.isEmpty()) {
+            llibre.setNumEstanteria(Integer.parseInt(numEstanteriaInput));
+        }
+
+        // Actualitzar el llibre a la base de dades
+        crud.UpdateLlibre(connection, llibre);
+    }
+
+    /**
+     * Permet eliminar un llibre existent basant-se en el seu ISBN després d'una
+     * confirmació de l'usuari.
+     */
+    public static void menuEliminarLlibre(BufferedReader br, CRUD crud, Connection connection)
+            throws SQLException, IOException {
+
+        System.out.println("Introdueix l'ISBN del llibre que vols eliminar:");
+        int isbn = Integer.parseInt(br.readLine());
+
+        // Confirmar l'acció abans d'eliminar
+        System.out.println("Segur que vols eliminar el llibre amb ISBN: " + isbn + "? (S/N)");
+        String confirmacio = br.readLine();
+
+        if (confirmacio.equalsIgnoreCase("S")) {
+            try {
+                boolean eliminat = crud.DeleteLlibre(connection, isbn);
+                if (eliminat) {
+                    System.out.println("Llibre eliminat amb èxit.");
+                } else {
+                    System.out.println("No s'ha trobat cap llibre amb l'ISBN: " + isbn);
+                }
+            } catch (SQLException e) {
+                System.err.println("Error al intentar eliminar el llibre: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Eliminació cancel·lada.");
+        }
     }
 
 }

@@ -17,7 +17,10 @@ import java.sql.Statement;
 
 public class CRUD {
 
-    // Crea la database
+    /**
+     * Crea la base de dades utilitzant un script SQL llegit des d'un fitxer.
+     * Les instruccions del script són executades línia a línia.
+     */
     public boolean CreateDatabase(Connection connection, InputStream input)
             throws IOException, ConnectException, SQLException {
 
@@ -41,11 +44,11 @@ public class CRUD {
 
                     // el caràcter ";" es considera terminació de sentència SQL
                     if (line.endsWith(";")) {
-                        // Eliminar el ";" i executar la instrucción
+                        // Eliminar el ";" i executar la instrucció
                         String sql = sqlStatement.toString().replace(";", "").trim();
                         statement.execute(sql);
 
-                        // Reiniciar el buffer para la siguiente instrucción
+                        // Reiniciar el buffer per la següent instrucció
                         sqlStatement.setLength(0);
                     }
                 }
@@ -62,7 +65,9 @@ public class CRUD {
         return dupRecord;
     }
 
-    // Inserta un llibre a la db
+    /**
+     * Insereix un nou registre a la taula `Llibres` de la base de dades.
+     */
     public void InsertLlibre(Connection connection, String tableName, Llibre llibre) throws SQLException {
 
         String query = "INSERT INTO " + tableName
@@ -89,24 +94,16 @@ public class CRUD {
             // Executa
             prepstat.executeUpdate();
 
-            // Obté el id automatic del llibre
-            try (ResultSet generatedKeys = prepstat.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    int generatedIdLlibre = generatedKeys.getInt(1);
-                    llibre.setIdLlibre(generatedIdLlibre);
-                }
-            }
-
             // Fem el commit
             connection.commit();
             System.out.println("Llibre insertat amb èxit.");
 
         } catch (SQLException sqle) {
-            // Si hay un error, hacer rollback
+            // Si hi ha un error, fer rollback
             connection.rollback();
-            System.err.println("Error al insertar el libro. Se ha realizado un rollback.");
+            System.err.println("Error al insertar el llibre. S'ha realitzat un rollback.");
             if (sqle.getMessage().contains("Duplicate entry")) {
-                System.out.println("Registro duplicado");
+                System.err.println("Registre duplicat");
             } else {
                 System.err.println(sqle.getMessage());
             }
@@ -116,17 +113,19 @@ public class CRUD {
         }
     }
 
-    // Lee todos los libros de la bd
+    /**
+     * Llegeix tots els registres de la taula `Llibres` i els mostra per consola.
+     */
     public void ReadAllLlibres(Connection connection) throws SQLException {
         String query = "SELECT * FROM Llibres";
 
         try (Statement statement = connection.createStatement()) {
             ResultSet rset = statement.executeQuery(query);
 
-            // Obtener el número de columnas y mostrar los registros
+            // Obtenir el número de columnes i mostrar els registres
             int colNum = Utils.getColumnNames(rset);
 
-            // Si hay columnas, leer y mostrar los registros
+            // Si hi ha columnes, llegir i mostrar els resultats
             if (colNum > 0) {
                 Utils.recorrerRegistres(rset, colNum);
             }
@@ -135,6 +134,9 @@ public class CRUD {
         }
     }
 
+    /**
+     * Cerca un llibre a la base de dades utilitzant el seu ISBN.
+     */
     public Llibre ReadLlibreByIsbn(Connection connection, int isbn) throws SQLException {
         String query = "SELECT * FROM Llibres WHERE isbn = ?";
 
@@ -143,7 +145,7 @@ public class CRUD {
             ResultSet rset = prepstat.executeQuery();
 
             if (rset.next()) {
-                // Si se encuentra el libro, obtenemos los valores de la base de datos
+                // Si troba el llibre, recuperem els valors desde la db
                 int idLlibre = rset.getInt("idLlibre"); // autoincrement
                 int isbnResult = rset.getInt("isbn");
                 String titol = rset.getString("titol");
@@ -153,130 +155,182 @@ public class CRUD {
                 int idCategoria = rset.getInt("id_categoria");
                 int numEstanteria = rset.getInt("num_estanteria");
 
-                // Devolver el objeto Llibre con los datos obtenidos
+                // Tornar un nou objecte llibre amb els valors obtinguts
                 return new Llibre(idLlibre, isbnResult, titol, autor, anyPublicacio, disponibilitat, idCategoria,
                         numEstanteria);
             }
 
         } catch (SQLException sqle) {
-            System.err.println("Error al leer el libro: " + sqle.getMessage());
+            System.err.println("Error al llegir el llibre: " + sqle.getMessage());
         }
 
-        // Si no se encuentra el libro, devolver null
+        // Si no troba el llibre, retorna null
         return null;
     }
 
+    /**
+     * Cerca llibres a la base de dades utilitzant un títol parcial o complet.
+     * Mostra els resultats per consola.
+     */
+    public void readLlibreByTitol(Connection connection, String titol) throws SQLException {
+        String query = "SELECT * FROM Llibres WHERE titol LIKE ?";
+
+        try (PreparedStatement prepstat = connection.prepareStatement(query)) {
+            // Afegim els percentatges per a la cerca amb LIKE
+            prepstat.setString(1, "%" + titol + "%");
+            ResultSet rset = prepstat.executeQuery();
+
+            // Comprovem si hi ha registres
+            if (!rset.isBeforeFirst()) {
+                System.out.println("No s'ha trobat cap llibre amb un títol que contingui: " + titol);
+                return;
+            }
+
+            // Obtenim el número de columnes i mostrem els noms
+            int colNum = Utils.getColumnNames(rset);
+
+            // Recorrem els registres i els mostrem
+            Utils.recorrerRegistres(rset, colNum);
+
+        } catch (SQLException sqle) {
+            System.err.println("Error al cercar llibres pel títol: " + sqle.getMessage());
+        }
+    }
+
+    /**
+     * Actualitza les dades d'un llibre existent a la base de dades.
+     * Identifica el llibre utilitzant el seu ISBN.
+     */
     public void UpdateLlibre(Connection connection, Llibre llibre) throws SQLException {
         String query = "UPDATE Llibres SET titol = ?, autor = ?, any_publicacio = ?, disponibilitat = ?, id_categoria = ?, num_estanteria = ? "
                 + "WHERE isbn = ?";
 
-        // Desactivar autocommit
+        // Recuperem el valor inicial de l'autocommit
+        boolean autocommitvalue = connection.getAutoCommit();
+
+        // Desactivar l'autocommit
         connection.setAutoCommit(false);
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
-            // Establecer los valores de los campos que se pueden modificar
-            prepstat.setString(1, llibre.getTitol()); // Título
-            prepstat.setString(2, llibre.getAutor()); // Autor
-            prepstat.setInt(3, llibre.getAnyPublicacio()); // Año de publicación
-            prepstat.setBoolean(4, llibre.isDisponibilitat()); // Disponibilidad
-            prepstat.setInt(5, llibre.getIdCategoria()); // ID de categoría
-            prepstat.setInt(6, llibre.getNumEstanteria()); // Número de estantería
+            int idx = 1; // Inicialitzem el comptador d'índexs
 
-            // El ISBN no debe cambiar, pero es el identificador para realizar el UPDATE
-            prepstat.setInt(7, llibre.getIsbn()); // ISBN como clave primaria
+            // Establim els valors dels camps que es poden modificar
+            prepstat.setString(idx++, llibre.getTitol()); // Títol
+            prepstat.setString(idx++, llibre.getAutor()); // Autor
+            prepstat.setInt(idx++, llibre.getAnyPublicacio()); // Any de publicació
+            prepstat.setBoolean(idx++, llibre.isDisponibilitat()); // Disponibilitat
+            prepstat.setInt(idx++, llibre.getIdCategoria()); // ID de categoria
+            prepstat.setInt(idx++, llibre.getNumEstanteria()); // Número d'estanteria
 
-            // Ejecutar la actualización
+            // L'ISBN no ha de canviar, però s'utilitza com a identificador per realitzar
+            // l'UPDATE
+            prepstat.setInt(idx++, llibre.getIsbn()); // ISBN com a clau primària
+
+            // Executar l'actualització
             int rowsAffected = prepstat.executeUpdate();
 
-            // Si se ha actualizado al menos un registro
+            // Si s'ha actualitzat almenys un registre
             if (rowsAffected > 0) {
-                // Hacer commit si la operación fue exitosa
+                // Fem commit si l'operació ha estat exitosa
                 connection.commit();
-                System.out.println("Libro actualizado con éxito.");
+                System.out.println("Llibre actualitzat amb èxit.");
             } else {
-                System.out.println("No se encontró el libro con el ISBN: " + llibre.getIsbn());
+                System.out.println("No s'ha trobat cap llibre amb l'ISBN: " + llibre.getIsbn());
             }
 
         } catch (SQLException sqle) {
-            // Si hay un error, hacer rollback
+            // Si hi ha un error, fem un rollback
             connection.rollback();
-            System.err.println("Error al actualizar el libro. Se ha realizado un rollback.");
+            System.err.println("Error en actualitzar el llibre. S'ha realitzat un rollback.");
         } finally {
-            // Devolver el valor original del autocommit
-            connection.setAutoCommit(true);
+            // Tornem al valor original de l'autocommit
+            connection.setAutoCommit(autocommitvalue);
         }
     }
 
-    // Elimina el libro segun el isbn
-    public void DeleteLlibre(Connection connection, int isbn) throws SQLException {
-
-        // Sentencia SQL para eliminar el libro por ISBN
+    /**
+     * Elimina un llibre de la base de dades utilitzant el seu ISBN.
+     */
+    public boolean DeleteLlibre(Connection connection, int isbn) throws SQLException {
         String query = "DELETE FROM Llibres WHERE isbn = ?";
 
+        // Recuperar el valor inicial de l'autocommit
+        boolean autocommitvalue = connection.getAutoCommit();
+
         // Desactivar autocommit
         connection.setAutoCommit(false);
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
-            // Usar el ISBN para especificar qué libro eliminar
             prepstat.setInt(1, isbn);
 
-            // Ejecutar la sentencia de eliminación
+            // Executar la sentència DELETE
             int rowsAffected = prepstat.executeUpdate();
 
-            // Si no se afectaron filas, el libro no fue encontrado
-            if (rowsAffected == 0) {
-                System.out.println("No se encontró el libro con ISBN: " + isbn);
-            } else {
-                // Hacer commit si la operación fue exitosa
+            // Si s'ha eliminat almenys un registre
+            if (rowsAffected > 0) {
                 connection.commit();
-                System.out.println("Libro eliminado con éxito.");
+                return true; // Retornem true si s'ha eliminat
+            } else {
+                connection.rollback();
+                return false; // Retornem false si no hi ha coincidències
             }
-
         } catch (SQLException sqle) {
-            // Si hay un error, hacer rollback
             connection.rollback();
-            System.err.println("Error al eliminar el libro. Se ha realizado un rollback.");
+            throw sqle;
         } finally {
-            // Devolver el valor original del autocommit
-            connection.setAutoCommit(true);
+            // Tornem l'autocommit al valor original
+            connection.setAutoCommit(autocommitvalue);
         }
     }
 
-    // Lee todos los registros de categorias que encuentre
+    /**
+     * Llegeix tots els registres de la taula `Categoria` i els mostra per consola.
+     */
     public void readAllCategories(Connection connection) throws SQLException {
-        // Consulta SQL para obtener todas las categorías
-        String query = "SELECT * FROM Categoria"; // Asegúrate de que el nombre de la tabla sea correcto
+        // Consulta SQL per obtenir totes les categories
+        String query = "SELECT * FROM Categoria"; // Assegura't que el nom de la taula sigui correcte
 
         try (Statement statement = connection.createStatement();
                 ResultSet rset = statement.executeQuery(query)) {
 
-            // Obtener el número de columnas y mostrar los registros
+            // Obtenim el número de columnes i mostrem els noms de les columnes
             int colNum = Utils.getColumnNames(rset);
 
-            // Si el número de columnas es > 0, procedemos a leer y mostrar los registros
+            // Si el número de columnes és > 0, procedim a llegir i mostrar els registres
             if (colNum > 0) {
                 Utils.recorrerRegistres(rset, colNum);
             }
         } catch (SQLException sqle) {
+            // Gestionem i mostrem l'error si es produeix alguna excepció SQL
             System.err.println(sqle.getMessage());
         }
     }
 
-    // Lee una categoria segun el id recibido
+    /**
+     * Cerca una categoria a la base de dades utilitzant el seu identificador.
+     * Mostra els resultats per consola.
+     */
     public void readCategoriaById(Connection connection, int idCategoria) throws SQLException {
+        // Consulta SQL per obtenir la categoria pel seu identificador
         String query = "SELECT * FROM Categoria WHERE id_categoria = ?";
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
+            // Assignem el valor de l'identificador al paràmetre de la consulta
             prepstat.setInt(1, idCategoria);
+
+            // Executem la consulta i obtenim els resultats
             try (ResultSet rset = prepstat.executeQuery()) {
+                // Obtenim el nombre de columnes i mostrem els noms de les columnes
                 int colNum = Utils.getColumnNames(rset);
+
+                // Si hi ha resultats, recorrem i mostrem els registres
                 if (colNum > 0) {
                     Utils.recorrerRegistres(rset, colNum);
                 }
             }
         } catch (SQLException sqle) {
-            System.err.println(sqle.getMessage());
+            // Mostrem l'error si es produeix una excepció SQL
+            System.err.println("Error durant la consulta: " + sqle.getMessage());
         }
     }
-
 }
