@@ -4,6 +4,11 @@
 
 package com.alexgil;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,18 +17,67 @@ import java.sql.Statement;
 
 public class CRUD {
 
-    // Añade un libro a la bd
-    public void InsertLlibre(Connection connection, Llibre llibre) throws SQLException {
+    // Crea la database
+    public boolean CreateDatabase(Connection connection, InputStream input)
+            throws IOException, ConnectException, SQLException {
 
-        String query = "INSERT INTO Llibres (isbn, titol, autor, any_publicacio, disponibilitat, id_categoria, num_estanteria) "
+        boolean dupRecord = false;
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input))) {
+            StringBuilder sqlStatement = new StringBuilder();
+            String line;
+
+            try (Statement statement = connection.createStatement()) {
+                while ((line = br.readLine()) != null) {
+                    // Ignorar comentaris i línies buides
+                    line = line.trim();
+
+                    if (line.isEmpty() || line.startsWith("--") || line.startsWith("//") || line.startsWith("/*")) {
+                        continue;
+                    }
+
+                    // Acumular la línea al buffer
+                    sqlStatement.append(line);
+
+                    // el caràcter ";" es considera terminació de sentència SQL
+                    if (line.endsWith(";")) {
+                        // Eliminar el ";" i executar la instrucción
+                        String sql = sqlStatement.toString().replace(";", "").trim();
+                        statement.execute(sql);
+
+                        // Reiniciar el buffer para la siguiente instrucción
+                        sqlStatement.setLength(0);
+                    }
+                }
+            } catch (SQLException sqle) {
+                if (!sqle.getMessage().contains("Duplicate entry")) {
+                    System.err.println(sqle.getMessage());
+                } else {
+                    dupRecord = true;
+                    br.readLine();
+                }
+            }
+        }
+
+        return dupRecord;
+    }
+
+    // Inserta un llibre a la db
+    public void InsertLlibre(Connection connection, String tableName, Llibre llibre) throws SQLException {
+
+        String query = "INSERT INTO " + tableName
+                + " (isbn, titol, autor, any_publicacio, disponibilitat, id_categoria, num_estanteria) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        // recuperem valor inicial de l'autocommit
+        boolean autocommitvalue = connection.getAutoCommit();
 
         // Desactivar autocommit
         connection.setAutoCommit(false);
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
             int idx = 1;
-            // No establecemos el idLlibre porque es autoincremental
+            // el idLlibre no esta posat perque té l'autoincrement
             prepstat.setInt(idx++, llibre.getIsbn());
             prepstat.setString(idx++, llibre.getTitol());
             prepstat.setString(idx++, llibre.getAutor());
@@ -32,21 +86,20 @@ public class CRUD {
             prepstat.setInt(idx++, llibre.getIdCategoria());
             prepstat.setInt(idx++, llibre.getNumEstanteria());
 
-            // Ejecutar la operación
+            // Executa
             prepstat.executeUpdate();
 
-            // Obtener el idLlibre generado automáticamente
+            // Obté el id automatic del llibre
             try (ResultSet generatedKeys = prepstat.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     int generatedIdLlibre = generatedKeys.getInt(1);
-                    // Ahora tenemos el idLlibre autoincrementado
                     llibre.setIdLlibre(generatedIdLlibre);
                 }
             }
 
-            // Hacer commit si la operación fue exitosa
+            // Fem el commit
             connection.commit();
-            System.out.println("Libro insertado con éxito.");
+            System.out.println("Llibre insertat amb èxit.");
 
         } catch (SQLException sqle) {
             // Si hay un error, hacer rollback
@@ -58,8 +111,8 @@ public class CRUD {
                 System.err.println(sqle.getMessage());
             }
         } finally {
-            // Devolver el valor original del autocommit
-            connection.setAutoCommit(true);
+            // Retornar al valor original del autocommit
+            connection.setAutoCommit(autocommitvalue);
         }
     }
 
