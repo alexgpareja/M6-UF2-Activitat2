@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<llibres>
+    <llibre id="1">
+        <isbn>9788401352836</isbn>
+        <titol>Cien años de soledad</titol>
+        <autor>Gabriel García Márquez</autor>
+        <any_publicacio>1967</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="2">
+        <isbn>9788420471839</isbn>
+        <titol>1984</titol>
+        <autor>George Orwell</autor>
+        <any_publicacio>1949</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>4</id_categoria>
+    </llibre>
+    <llibre id="3">
+        <isbn>9788466345897</isbn>
+        <titol>El código Da Vinci</titol>
+        <autor>Dan Brown</autor>
+        <any_publicacio>2003</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>3</id_categoria>
+    </llibre>
+    <llibre id="4">
+        <isbn>9788497593793</isbn>
+        <titol>El principito</titol>
+        <autor>Antoine de Saint-Exupéry</autor>
+        <any_publicacio>1943</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="5">
+        <isbn>9788408163381</isbn>
+        <titol>El alquimista</titol>
+        <autor>Paulo Coelho</autor>
+        <any_publicacio>1988</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>5</id_categoria>
+    </llibre>
+    <llibre id="6">
+        <isbn>9788420674209</isbn>
+        <titol>Crimen y castigo</titol>
+        <autor>Fyodor Dostoevsky</autor>
+        <any_publicacio>1866</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="7">
+        <isbn>9788408093107</isbn>
+        <titol>El nombre de la rosa</titol>
+        <autor>Umberto Eco</autor>
+        <any_publicacio>1980</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>3</id_categoria>
+    </llibre>
+    <llibre id="8">
+        <isbn>9788466664479</isbn>
+        <titol>La sombra del viento</titol>
+        <autor>Carlos Ruiz Zafón</autor>
+        <any_publicacio>2001</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="9">
+        <isbn>9788420471815</isbn>
+        <titol>Orgullo y prejuicio</titol>
+        <autor>Jane Austen</autor>
+        <any_publicacio>1813</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>6</id_categoria>
+    </llibre>
+    <llibre id="10">
+        <isbn>9788466664417</isbn>
+        <titol>El psicoanalista</titol>
+        <autor>John Katzenbach</autor>
+        <any_publicacio>2002</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>7</id_categoria>
+    </llibre>
+    <llibre id="11">
+        <isbn>9788420471900</isbn>
+        <titol>Sapiens: De animales a dioses</titol>
+        <autor>Yuval Noah Harari</autor>
+        <any_publicacio>2011</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>2</id_categoria>
+    </llibre>
+    <llibre id="12">
+        <isbn>9788408175728</isbn>
+        <titol>El poder del ahora</titol>
+        <autor>Eckhart Tolle</autor>
+        <any_publicacio>1997</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>11</id_categoria>
+    </llibre>
+    <llibre id="13">
+        <isbn>9788408127032</isbn>
+        <titol>La chica del tren</titol>
+        <autor>Paula Hawkins</autor>
+        <any_publicacio>2015</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>7</id_categoria>
+    </llibre>
+    <llibre id="14">
+        <isbn>9788466664692</isbn>
+        <titol>El médico</titol>
+        <autor>Noah Gordon</autor>
+        <any_publicacio>1986</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>8</id_categoria>
+    </llibre>
+    <llibre id="15">
+        <isbn>9788420471950</isbn>
+        <titol>Breve historia del tiempo</titol>
+        <autor>Stephen Hawking</autor>
+        <any_publicacio>1988</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>10</id_categoria>
+    </llibre>
+    <llibre id="16">
+        <isbn>9788408163375</isbn>
+        <titol>Los pilares de la Tierra</titol>
+        <autor>Ken Follett</autor>
+        <any_publicacio>1989</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>8</id_categoria>
+    </llibre>
+    <llibre id="17">
+        <isbn>9788420471823</isbn>
+        <titol>Matar a un ruiseñor</titol>
+        <autor>Harper Lee</autor>
+        <any_publicacio>1960</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="18">
+        <isbn>9788466345881</isbn>
+        <titol>El señor de los anillos</titol>
+        <autor>J.R.R. Tolkien</autor>
+        <any_publicacio>1954</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>5</id_categoria>
+    </llibre>
+    <llibre id="19">
+        <isbn>9788408175711</isbn>
+        <titol>Crónica de una muerte anunciada</titol>
+        <autor>Gabriel García Márquez</autor>
+        <any_publicacio>1981</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="20">
+        <isbn>9788420674194</isbn>
+        <titol>Don Quijote de la Mancha</titol>
+        <autor>Miguel de Cervantes</autor>
+        <any_publicacio>1605</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="21">
+        <isbn>9788408163399</isbn>
+        <titol>El perfume</titol>
+        <autor>Patrick Süskind</autor>
+        <any_publicacio>1985</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="22">
+        <isbn>9788466664455</isbn>
+        <titol>La naranja mecánica</titol>
+        <autor>Anthony Burgess</autor>
+        <any_publicacio>1962</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>4</id_categoria>
+    </llibre>
+    <llibre id="23">
+        <isbn>9788420471847</isbn>
+        <titol>Fahrenheit 451</titol>
+        <autor>Ray Bradbury</autor>
+        <any_publicacio>1953</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>4</id_categoria>
+    </llibre>
+    <llibre id="24">
+        <isbn>9788408093115</isbn>
+        <titol>El retrato de Dorian Gray</titol>
+        <autor>Oscar Wilde</autor>
+        <any_publicacio>1890</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="25">
+        <isbn>9788466664424</isbn>
+        <titol>Drácula</titol>
+        <autor>Bram Stoker</autor>
+        <any_publicacio>1897</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>7</id_categoria>
+    </llibre>
+    <llibre id="26">
+        <isbn>9788420471854</isbn>
+        <titol>Moby Dick</titol>
+        <autor>Herman Melville</autor>
+        <any_publicacio>1851</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="27">
+        <isbn>9788408175735</isbn>
+        <titol>Las aventuras de Sherlock Holmes</titol>
+        <autor>Arthur Conan Doyle</autor>
+        <any_publicacio>1892</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>3</id_categoria>
+    </llibre>
+    <llibre id="28">
+        <isbn>9788466664486</isbn>
+        <titol>El gran Gatsby</titol>
+        <autor>F. Scott Fitzgerald</autor>
+        <any_publicacio>1925</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="29">
+        <isbn>9788420471861</isbn>
+        <titol>Ulises</titol>
+        <autor>James Joyce</autor>
+        <any_publicacio>1922</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="30">
+        <isbn>9788408163405</isbn>
+        <titol>Lolita</titol>
+        <autor>Vladimir Nabokov</autor>
+        <any_publicacio>1955</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="31">
+        <isbn>9788466664493</isbn>
+        <titol>En busca del tiempo perdido</titol>
+        <autor>Marcel Proust</autor>
+        <any_publicacio>1913</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+    <llibre id="32">
+        <isbn>9788420471878</isbn>
+        <titol>Guerra y paz</titol>
+        <autor>León Tolstói</autor>
+        <any_publicacio>1869</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>8</id_categoria>
+    </llibre>
+    <llibre id="33">
+        <isbn>9788408175742</isbn>
+        <titol>Madame Bovary</titol>
+        <autor>Gustave Flaubert</autor>
+        <any_publicacio>1856</any_publicacio>
+        <disponibilitat>true</disponibilitat>
+        <id_categoria>1</id_categoria>
+    </llibre>
+</llibres>

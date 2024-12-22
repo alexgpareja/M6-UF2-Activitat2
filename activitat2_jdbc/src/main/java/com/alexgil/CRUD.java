@@ -71,8 +71,8 @@ public class CRUD {
     public void InsertLlibre(Connection connection, String tableName, Llibre llibre) throws SQLException {
 
         String query = "INSERT INTO " + tableName
-                + " (isbn, titol, autor, any_publicacio, disponibilitat, id_categoria, num_estanteria) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                + " (isbn, titol, autor, any_publicacio, disponibilitat, id_categoria) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
 
         // recuperem valor inicial de l'autocommit
         boolean autocommitvalue = connection.getAutoCommit();
@@ -83,13 +83,12 @@ public class CRUD {
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
             int idx = 1;
             // el idLlibre no esta posat perque té l'autoincrement
-            prepstat.setInt(idx++, llibre.getIsbn());
+            prepstat.setLong(idx++, llibre.getIsbn());
             prepstat.setString(idx++, llibre.getTitol());
             prepstat.setString(idx++, llibre.getAutor());
             prepstat.setInt(idx++, llibre.getAnyPublicacio());
             prepstat.setBoolean(idx++, llibre.isDisponibilitat());
             prepstat.setInt(idx++, llibre.getIdCategoria());
-            prepstat.setInt(idx++, llibre.getNumEstanteria());
 
             // Executa
             prepstat.executeUpdate();
@@ -152,27 +151,25 @@ public class CRUD {
     /**
      * Cerca un llibre a la base de dades utilitzant el seu ISBN.
      */
-    public Llibre ReadLlibreByIsbn(Connection connection, int isbn) throws SQLException {
+    public Llibre ReadLlibreByIsbn(Connection connection, long isbn) throws SQLException {
         String query = "SELECT * FROM Llibres WHERE isbn = ?";
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
-            prepstat.setInt(1, isbn);
+            prepstat.setLong(1, isbn);
             ResultSet rset = prepstat.executeQuery();
 
             if (rset.next()) {
                 // Si troba el llibre, recuperem els valors desde la db
-                int idLlibre = rset.getInt("idLlibre"); // autoincrement
-                int isbnResult = rset.getInt("isbn");
+                int idLlibre = rset.getInt("id_llibre"); // autoincrement
+                long isbnResult = rset.getInt("isbn");
                 String titol = rset.getString("titol");
                 String autor = rset.getString("autor");
                 int anyPublicacio = rset.getInt("any_publicacio");
                 boolean disponibilitat = rset.getBoolean("disponibilitat");
                 int idCategoria = rset.getInt("id_categoria");
-                int numEstanteria = rset.getInt("num_estanteria");
 
                 // Tornar un nou objecte llibre amb els valors obtinguts
-                return new Llibre(idLlibre, isbnResult, titol, autor, anyPublicacio, disponibilitat, idCategoria,
-                        numEstanteria);
+                return new Llibre(idLlibre, isbnResult, titol, autor, anyPublicacio, disponibilitat, idCategoria);
             }
 
         } catch (SQLException sqle) {
@@ -217,7 +214,7 @@ public class CRUD {
      * Identifica el llibre utilitzant el seu ISBN.
      */
     public void UpdateLlibre(Connection connection, Llibre llibre) throws SQLException {
-        String query = "UPDATE Llibres SET titol = ?, autor = ?, any_publicacio = ?, disponibilitat = ?, id_categoria = ?, num_estanteria = ? "
+        String query = "UPDATE Llibres SET titol = ?, autor = ?, any_publicacio = ?, disponibilitat = ?, id_categoria = ? "
                 + "WHERE isbn = ?";
 
         // Recuperem el valor inicial de l'autocommit
@@ -235,11 +232,10 @@ public class CRUD {
             prepstat.setInt(idx++, llibre.getAnyPublicacio()); // Any de publicació
             prepstat.setBoolean(idx++, llibre.isDisponibilitat()); // Disponibilitat
             prepstat.setInt(idx++, llibre.getIdCategoria()); // ID de categoria
-            prepstat.setInt(idx++, llibre.getNumEstanteria()); // Número d'estanteria
 
             // L'ISBN no ha de canviar, però s'utilitza com a identificador per realitzar
             // l'UPDATE
-            prepstat.setInt(idx++, llibre.getIsbn()); // ISBN com a clau primària
+            prepstat.setLong(idx++, llibre.getIsbn()); // ISBN com a clau primària
 
             // Executar l'actualització
             int rowsAffected = prepstat.executeUpdate();
@@ -256,7 +252,7 @@ public class CRUD {
         } catch (SQLException sqle) {
             // Si hi ha un error, fem un rollback
             connection.rollback();
-            System.err.println("Error en actualitzar el llibre. S'ha realitzat un rollback.");
+            System.err.println("Error en actualitzar el llibre. S'ha realitzat un rollback." + sqle.getMessage());
         } finally {
             // Tornem al valor original de l'autocommit
             connection.setAutoCommit(autocommitvalue);
@@ -266,7 +262,7 @@ public class CRUD {
     /**
      * Elimina un llibre de la base de dades utilitzant el seu ISBN.
      */
-    public boolean DeleteLlibre(Connection connection, int isbn) throws SQLException {
+    public boolean DeleteLlibre(Connection connection, long isbn) throws SQLException {
         String query = "DELETE FROM Llibres WHERE isbn = ?";
 
         // Recuperar el valor inicial de l'autocommit
@@ -276,7 +272,7 @@ public class CRUD {
         connection.setAutoCommit(false);
 
         try (PreparedStatement prepstat = connection.prepareStatement(query)) {
-            prepstat.setInt(1, isbn);
+            prepstat.setLong(1, isbn);
 
             // Executar la sentència DELETE
             int rowsAffected = prepstat.executeUpdate();

@@ -169,8 +169,8 @@ public class GestioDBHR {
                 break;
 
             case 7:
-                // Generar un XML amb els registres
-                System.out.println("Generació de l'XML encara no implementada.");
+                // Generar un fitxer XML amb els llibres
+                FitxerXML.crearFitxerXMLLlibres(connection);
                 break;
 
             case 9:
@@ -288,8 +288,19 @@ public class GestioDBHR {
                 case 1:
                     // Buscar un llibre pel seu ISBN
                     System.out.println("Introdueix el ISBN del llibre >> ");
-                    int isbn = Integer.parseInt(br.readLine());
-                    crud.ReadLlibreByIsbn(connection, isbn);
+                    long isbn = Long.parseLong(br.readLine());
+                    Llibre llibre = crud.ReadLlibreByIsbn(connection, isbn);
+
+                    if (llibre != null) {
+                        // Si es troba el llibre, mostrar-ne la informació
+                        System.out.println("Informació del llibre trobat:");
+                        System.out.printf(
+                                "ID: %d, ISBN: %d, Títol: %s, Autor: %s, Any: %d, Disponibilitat: %b, Categoria ID: %d%n",
+                                llibre.getIdLlibre(), llibre.getIsbn(), llibre.getTitol(), llibre.getAutor(),
+                                llibre.getAnyPublicacio(), llibre.isDisponibilitat(), llibre.getIdCategoria());
+                    } else {
+                        System.out.println("No s'ha trobat cap llibre amb aquest ISBN");
+                    }
                     break;
                 case 2:
                     // Buscar llibres amb un títol parcial o complet
@@ -324,7 +335,7 @@ public class GestioDBHR {
 
         // Sol·licitar els camps obligatoris per inserir un llibre
         System.out.print("ISBN: ");
-        int isbn = Integer.parseInt(br.readLine());
+        long isbn = Integer.parseInt(br.readLine());
 
         System.out.print("Títol: ");
         String titol = br.readLine();
@@ -341,14 +352,10 @@ public class GestioDBHR {
         System.out.print("Id de Categoria: ");
         int idCategoria = Integer.parseInt(br.readLine());
 
-        System.out.print("Número d'estanteria: ");
-        int numEstanteria = Integer.parseInt(br.readLine());
-
         // Crear un objecte Llibre i inserir-lo a la base de dades
-        Llibre llibre = new Llibre(0, isbn, titol, autor, anyPublicacio, disponibilitat, idCategoria, numEstanteria);
-        crud.InsertLlibre(connection, "Llibre", llibre);
+        Llibre llibre = new Llibre(0, isbn, titol, autor, anyPublicacio, disponibilitat, idCategoria);
+        crud.InsertLlibre(connection, "Llibres", llibre);
 
-        System.out.println("Llibre afegit amb èxit!");
     }
 
     /**
@@ -359,7 +366,7 @@ public class GestioDBHR {
             throws SQLException, IOException {
 
         System.out.println("Introdueix l'ISBN del llibre que vols actualitzar:");
-        int isbn = Integer.parseInt(br.readLine());
+        long isbn = Integer.parseInt(br.readLine());
 
         // Buscar el llibre segons l'ISBN
         Llibre llibre = crud.ReadLlibreByIsbn(connection, isbn);
@@ -405,12 +412,6 @@ public class GestioDBHR {
             llibre.setIdCategoria(Integer.parseInt(idCategoriaInput));
         }
 
-        System.out.print("Nou número d'estanteria: ");
-        String numEstanteriaInput = br.readLine();
-        if (!numEstanteriaInput.isEmpty()) {
-            llibre.setNumEstanteria(Integer.parseInt(numEstanteriaInput));
-        }
-
         // Actualitzar el llibre a la base de dades
         crud.UpdateLlibre(connection, llibre);
     }
@@ -423,7 +424,7 @@ public class GestioDBHR {
             throws SQLException, IOException {
 
         System.out.println("Introdueix l'ISBN del llibre que vols eliminar:");
-        int isbn = Integer.parseInt(br.readLine());
+        long isbn = Integer.parseInt(br.readLine());
 
         // Confirmar l'acció abans d'eliminar
         System.out.println("Segur que vols eliminar el llibre amb ISBN: " + isbn + "? (S/N)");

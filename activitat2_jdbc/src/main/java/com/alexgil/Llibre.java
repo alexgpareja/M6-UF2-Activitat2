@@ -4,17 +4,16 @@ public class Llibre {
 
     // Propiedades
     private int idLlibre;
-    private int isbn;
+    private long isbn;
     private String titol;
     private String autor;
     private int anyPublicacio;
     private boolean disponibilitat;
     private int idCategoria;
-    private int numEstanteria;
 
     // Constructor por defecto: con todos los parametros obligatoriamente
-    public Llibre(int idLlibre, int isbn, String titol, String autor, int anyPublicacio, boolean disponibilitat,
-            int idCategoria, int numEstanteria) {
+    public Llibre(int idLlibre, long isbn, String titol, String autor, int anyPublicacio, boolean disponibilitat,
+            int idCategoria) {
         this.idLlibre = idLlibre;
         this.isbn = isbn;
         this.titol = titol;
@@ -22,7 +21,6 @@ public class Llibre {
         this.anyPublicacio = anyPublicacio;
         this.disponibilitat = disponibilitat;
         this.idCategoria = idCategoria;
-        this.numEstanteria = numEstanteria;
     }
 
     // Getters y Setters
@@ -34,11 +32,11 @@ public class Llibre {
         this.idLlibre = idLlibre;
     }
 
-    public int getIsbn() {
+    public long getIsbn() {
         return isbn;
     }
 
-    public void setIsbn(int isbn) {
+    public void setIsbn(long isbn) {
         this.isbn = isbn;
     }
 
@@ -82,14 +80,6 @@ public class Llibre {
         this.idCategoria = idCategoria;
     }
 
-    public int getNumEstanteria() {
-        return numEstanteria;
-    }
-
-    public void setNumEstanteria(int numEstanteria) {
-        this.numEstanteria = numEstanteria;
-    }
-
     @Override
     public String toString() {
         return "Llibre{" +
@@ -100,7 +90,6 @@ public class Llibre {
                 ", anyPublicacio=" + anyPublicacio +
                 ", disponibilitat=" + disponibilitat +
                 ", idCategoria=" + idCategoria +
-                ", numEstanteria=" + numEstanteria +
                 '}';
     }
 
