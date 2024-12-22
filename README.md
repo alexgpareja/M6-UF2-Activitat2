@@ -62,25 +62,26 @@ Segueix les instruccions del menú principal per interactuar amb la base de dade
    ![cerca llibre per isbn](image-7.png)
    ![cerca llibre per titol](image-8.png)
    ![cerca per id categoria](image-9.png)
+
    Si no troba cap coincidencia, ho indica:
    ![cerca llibre no trobada](image-10.png)
 
-4. INSERIR NOU LLIBRE
+5. INSERIR NOU LLIBRE
    Permet inserir un nou llibre a la base de dades.
    ![Inserir llibres](image-4.png)
    Si el llibre ja existeix (ja hi ha un llibre amb aquest isbn) no permetrà afegir-lo duplicat:
    ![llibre duplicat](image-5.png)
 
-5. ACTUALITZAR LLIBRE
+6. ACTUALITZAR LLIBRE
    ![llibre actualitzat](image-6.png)
 
-6. ELIMINAR LLIBRE
+7. ELIMINAR LLIBRE
    Permet eliminar un llibre pel seu ISBN.
    ![llibre eliminat](image-12.png)
    Si no existeix el llibre
    ![eliminar llibre no trobat](image-11.png)
 
-7. GENERAR XML
+8. GENERAR XML
    Genera un xml mitjançant DOM de tots els registres de la base dades.
    ![xml](image-13.png)
 
